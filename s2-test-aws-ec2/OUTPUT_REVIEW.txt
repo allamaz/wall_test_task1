@@ -1,0 +1,682 @@
+PS G:\LOCAL_REPOS\wall_test_task1\s2-test-aws-ec2> terraform plan
+data.aws_ami.amazon_linux_2023: Reading...
+data.aws_secretsmanager_secret.test1-ssh: Reading...
+data.aws_availability_zones.available: Reading...
+data.aws_secretsmanager_secret.test1-ssh: Read complete after 1s [id=arn:aws:secretsmanager:eu-west-1:866952548456:secret:test1-ssh-pair-WazOFD]
+data.aws_secretsmanager_secret_version.test1-ssh_version: Reading...
+data.aws_availability_zones.available: Read complete after 1s [id=eu-west-1]
+data.aws_secretsmanager_secret_version.test1-ssh_version: Read complete after 0s [id=arn:aws:secretsmanager:eu-west-1:866952548456:secret:test1-ssh-pair-WazOFD|AWSCURRENT]
+data.aws_ami.amazon_linux_2023: Read complete after 1s [id=ami-013310b6993a8dfe7]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # aws_backup_plan.main will be created
+  + resource "aws_backup_plan" "main" {
+      + arn      = (known after apply)
+      + id       = (known after apply)
+      + name     = "ha-ec2-setup-backup-plan"
+      + tags     = {
+          + "Name" = "ha-ec2-setup-backup-plan"
+        }
+      + tags_all = {
+          + "Environment" = "production"
+          + "ManagedBy"   = "Terraform"
+          + "Name"        = "ha-ec2-setup-backup-plan"
+          + "Project"     = "ha-ec2-setup"
+        }
+      + version  = (known after apply)
+
+      + rule {
+          + completion_window        = 180
+          + enable_continuous_backup = false
+          + recovery_point_tags      = {
+              + "BackupType"  = "Automated"
+              + "Environment" = "production"
+            }
+          + rule_name                = "daily_backup"
+          + schedule                 = "cron(0 2 * * ? *)"
+          + start_window             = 60
+          + target_vault_name        = "ha-ec2-setup-backup-vault"
+
+          + lifecycle {
+              + delete_after                              = 30
+              + opt_in_to_archive_for_supported_resources = (known after apply)
+            }
+        }
+    }
+
+  # aws_backup_selection.main will be created
+  + resource "aws_backup_selection" "main" {
+      + iam_role_arn  = (known after apply)
+      + id            = (known after apply)
+      + name          = "ha-ec2-setup-backup-selection"
+      + not_resources = (known after apply)
+      + plan_id       = (known after apply)
+      + resources     = (known after apply)
+
+      + condition (known after apply)
+    }
+
+  # aws_backup_vault.main will be created
+  + resource "aws_backup_vault" "main" {
+      + arn             = (known after apply)
+      + force_destroy   = false
+      + id              = (known after apply)
+      + kms_key_arn     = (known after apply)
+      + name            = "ha-ec2-setup-backup-vault"
+      + recovery_points = (known after apply)
+      + tags            = {
+          + "Name" = "ha-ec2-setup-backup-vault"
+        }
+      + tags_all        = {
+          + "Environment" = "production"
+          + "ManagedBy"   = "Terraform"
+          + "Name"        = "ha-ec2-setup-backup-vault"
+          + "Project"     = "ha-ec2-setup"
+        }
+    }
+
+  # aws_cloudwatch_metric_alarm.instance_cpu will be created
+  + resource "aws_cloudwatch_metric_alarm" "instance_cpu" {
+      + actions_enabled                       = true
+      + alarm_description                     = "this metric monitors ec2 cpu utilization"
+      + alarm_name                            = "ha-ec2-setup-high-cpu"
+      + arn                                   = (known after apply)
+      + comparison_operator                   = "GreaterThanThreshold"
+      + dimensions                            = (known after apply)
+      + evaluate_low_sample_count_percentiles = (known after apply)
+      + evaluation_periods                    = 2
+      + id                                    = (known after apply)
+      + metric_name                           = "CPUUtilization"
+      + namespace                             = "AWS/EC2"
+      + period                                = 300
+      + statistic                             = "Average"
+      + tags_all                              = {
+          + "Environment" = "production"
+          + "ManagedBy"   = "Terraform"
+          + "Project"     = "ha-ec2-setup"
+        }
+      + threshold                             = 80
+      + treat_missing_data                    = "missing"
+    }
+
+  # aws_cloudwatch_metric_alarm.instance_status_check will be created
+  + resource "aws_cloudwatch_metric_alarm" "instance_status_check" {
+      + actions_enabled                       = true
+      + alarm_description                     = "this metric monitors instance status checks"
+      + alarm_name                            = "ha-ec2-setup-status-check-failed"
+      + arn                                   = (known after apply)
+      + comparison_operator                   = "GreaterThanThreshold"
+      + dimensions                            = (known after apply)
+      + evaluate_low_sample_count_percentiles = (known after apply)
+      + evaluation_periods                    = 2
+      + id                                    = (known after apply)
+      + metric_name                           = "StatusCheckFailed"
+      + namespace                             = "AWS/EC2"
+      + period                                = 60
+      + statistic                             = "Maximum"
+      + tags_all                              = {
+          + "Environment" = "production"
+          + "ManagedBy"   = "Terraform"
+          + "Project"     = "ha-ec2-setup"
+        }
+      + threshold                             = 0
+      + treat_missing_data                    = "missing"
+    }
+
+  # aws_ebs_volume.data_volume_1 will be created
+  + resource "aws_ebs_volume" "data_volume_1" {
+      + arn               = (known after apply)
+      + availability_zone = (known after apply)
+      + encrypted         = true
+      + final_snapshot    = false
+      + id                = (known after apply)
+      + iops              = 3000
+      + kms_key_id        = (known after apply)
+      + size              = 50
+      + snapshot_id       = (known after apply)
+      + tags              = {
+          + "Backup"      = "daily"
+          + "Name"        = "ha-ec2-setup-data-volume-1"
+          + "VolumeIndex" = "1"
+        }
+      + tags_all          = {
+          + "Backup"      = "daily"
+          + "Environment" = "production"
+          + "ManagedBy"   = "Terraform"
+          + "Name"        = "ha-ec2-setup-data-volume-1"
+          + "Project"     = "ha-ec2-setup"
+          + "VolumeIndex" = "1"
+        }
+      + throughput        = 125
+      + type              = "gp3"
+    }
+
+  # aws_ebs_volume.data_volume_2 will be created
+  + resource "aws_ebs_volume" "data_volume_2" {
+      + arn               = (known after apply)
+      + availability_zone = (known after apply)
+      + encrypted         = true
+      + final_snapshot    = false
+      + id                = (known after apply)
+      + iops              = 3000
+      + kms_key_id        = (known after apply)
+      + size              = 50
+      + snapshot_id       = (known after apply)
+      + tags              = {
+          + "Backup"      = "daily"
+          + "Name"        = "ha-ec2-setup-data-volume-2"
+          + "VolumeIndex" = "2"
+        }
+      + tags_all          = {
+          + "Backup"      = "daily"
+          + "Environment" = "production"
+          + "ManagedBy"   = "Terraform"
+          + "Name"        = "ha-ec2-setup-data-volume-2"
+          + "Project"     = "ha-ec2-setup"
+          + "VolumeIndex" = "2"
+        }
+      + throughput        = 125
+      + type              = "gp3"
+    }
+
+  # aws_eip.main will be created
+  + resource "aws_eip" "main" {
+      + allocation_id        = (known after apply)
+      + arn                  = (known after apply)
+      + association_id       = (known after apply)
+      + carrier_ip           = (known after apply)
+      + customer_owned_ip    = (known after apply)
+      + domain               = "vpc"
+      + id                   = (known after apply)
+      + instance             = (known after apply)
+      + network_border_group = (known after apply)
+      + network_interface    = (known after apply)
+      + private_dns          = (known after apply)
+      + private_ip           = (known after apply)
+      + ptr_record           = (known after apply)
+      + public_dns           = (known after apply)
+      + public_ip            = (known after apply)
+      + public_ipv4_pool     = (known after apply)
+      + tags                 = {
+          + "Name" = "ha-ec2-setup-eip"
+        }
+      + tags_all             = {
+          + "Environment" = "production"
+          + "ManagedBy"   = "Terraform"
+          + "Name"        = "ha-ec2-setup-eip"
+          + "Project"     = "ha-ec2-setup"
+        }
+      + vpc                  = (known after apply)
+    }
+
+  # aws_iam_instance_profile.ec2_profile will be created
+  + resource "aws_iam_instance_profile" "ec2_profile" {
+      + arn         = (known after apply)
+      + create_date = (known after apply)
+      + id          = (known after apply)
+      + name        = "ha-ec2-setup-ec2-profile"
+      + name_prefix = (known after apply)
+      + path        = "/"
+      + role        = "ha-ec2-setup-ec2-role"
+      + tags_all    = {
+          + "Environment" = "production"
+          + "ManagedBy"   = "Terraform"
+          + "Project"     = "ha-ec2-setup"
+        }
+      + unique_id   = (known after apply)
+    }
+
+  # aws_iam_role.backup_role will be created
+  + resource "aws_iam_role" "backup_role" {
+      + arn                   = (known after apply)
+      + assume_role_policy    = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action    = "sts:AssumeRole"
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + Service = "backup.amazonaws.com"
+                        }
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + create_date           = (known after apply)
+      + force_detach_policies = false
+      + id                    = (known after apply)
+      + managed_policy_arns   = (known after apply)
+      + max_session_duration  = 3600
+      + name                  = "ha-ec2-setup-backup-role"
+      + name_prefix           = (known after apply)
+      + path                  = "/"
+      + tags_all              = {
+          + "Environment" = "production"
+          + "ManagedBy"   = "Terraform"
+          + "Project"     = "ha-ec2-setup"
+        }
+      + unique_id             = (known after apply)
+
+      + inline_policy (known after apply)
+    }
+
+  # aws_iam_role.ec2_role will be created
+  + resource "aws_iam_role" "ec2_role" {
+      + arn                   = (known after apply)
+      + assume_role_policy    = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action    = "sts:AssumeRole"
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + Service = "ec2.amazonaws.com"
+                        }
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + create_date           = (known after apply)
+      + force_detach_policies = false
+      + id                    = (known after apply)
+      + managed_policy_arns   = (known after apply)
+      + max_session_duration  = 3600
+      + name                  = "ha-ec2-setup-ec2-role"
+      + name_prefix           = (known after apply)
+      + path                  = "/"
+      + tags                  = {
+          + "Name" = "ha-ec2-setup-ec2-role"
+        }
+      + tags_all              = {
+          + "Environment" = "production"
+          + "ManagedBy"   = "Terraform"
+          + "Name"        = "ha-ec2-setup-ec2-role"
+          + "Project"     = "ha-ec2-setup"
+        }
+      + unique_id             = (known after apply)
+
+      + inline_policy (known after apply)
+    }
+
+  # aws_iam_role_policy_attachment.backup_policy will be created
+  + resource "aws_iam_role_policy_attachment" "backup_policy" {
+      + id         = (known after apply)
+      + policy_arn = "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup"
+      + role       = "ha-ec2-setup-backup-role"
+    }
+
+  # aws_iam_role_policy_attachment.ssm_policy will be created
+  + resource "aws_iam_role_policy_attachment" "ssm_policy" {
+      + id         = (known after apply)
+      + policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+      + role       = "ha-ec2-setup-ec2-role"
+    }
+
+  # aws_instance.main will be created
+  + resource "aws_instance" "main" {
+      + ami                                  = "ami-013310b6993a8dfe7"
+      + arn                                  = (known after apply)
+      + associate_public_ip_address          = (known after apply)
+      + availability_zone                    = (known after apply)
+      + cpu_core_count                       = (known after apply)
+      + cpu_threads_per_core                 = (known after apply)
+      + disable_api_stop                     = (known after apply)
+      + disable_api_termination              = true
+      + ebs_optimized                        = (known after apply)
+      + get_password_data                    = false
+      + host_id                              = (known after apply)
+      + host_resource_group_arn              = (known after apply)
+      + iam_instance_profile                 = "ha-ec2-setup-ec2-profile"
+      + id                                   = (known after apply)
+      + instance_initiated_shutdown_behavior = "stop"
+      + instance_lifecycle                   = (known after apply)
+      + instance_state                       = (known after apply)
+      + instance_type                        = "t3.medium"
+      + ipv6_address_count                   = (known after apply)
+      + ipv6_addresses                       = (known after apply)
+      + key_name                             = (sensitive value)
+      + monitoring                           = true
+      + outpost_arn                          = (known after apply)
+      + password_data                        = (known after apply)
+      + placement_group                      = (known after apply)
+      + placement_partition_number           = (known after apply)
+      + primary_network_interface_id         = (known after apply)
+      + private_dns                          = (known after apply)
+      + private_ip                           = (known after apply)
+      + public_dns                           = (known after apply)
+      + public_ip                            = (known after apply)
+      + secondary_private_ips                = (known after apply)
+      + security_groups                      = (known after apply)
+      + source_dest_check                    = true
+      + spot_instance_request_id             = (known after apply)
+      + subnet_id                            = (known after apply)
+      + tags                                 = {
+          + "BackupPolicy"     = "daily"
+          + "HighAvailability" = "true"
+          + "Name"             = "ha-ec2-setup-instance"
+        }
+      + tags_all                             = {
+          + "BackupPolicy"     = "daily"
+          + "Environment"      = "production"
+          + "HighAvailability" = "true"
+          + "ManagedBy"        = "Terraform"
+          + "Name"             = "ha-ec2-setup-instance"
+          + "Project"          = "ha-ec2-setup"
+        }
+      + tenancy                              = (known after apply)
+      + user_data                            = "eb1efe25ed486eddacf55472fe30d72ece31fc9e"
+      + user_data_base64                     = (known after apply)
+      + user_data_replace_on_change          = false
+      + vpc_security_group_ids               = (known after apply)
+
+      + capacity_reservation_specification (known after apply)
+
+      + cpu_options (known after apply)
+
+      + ebs_block_device (known after apply)
+
+      + enclave_options (known after apply)
+
+      + ephemeral_block_device (known after apply)
+
+      + instance_market_options (known after apply)
+
+      + maintenance_options (known after apply)
+
+      + metadata_options {
+          + http_endpoint               = "enabled"
+          + http_protocol_ipv6          = "disabled"
+          + http_put_response_hop_limit = 1
+          + http_tokens                 = "required"
+          + instance_metadata_tags      = (known after apply)
+        }
+
+      + network_interface (known after apply)
+
+      + private_dns_name_options (known after apply)
+
+      + root_block_device {
+          + delete_on_termination = false
+          + device_name           = (known after apply)
+          + encrypted             = true
+          + iops                  = (known after apply)
+          + kms_key_id            = (known after apply)
+          + tags                  = {
+              + "Name" = "ha-ec2-setup-root-volume"
+            }
+          + tags_all              = (known after apply)
+          + throughput            = (known after apply)
+          + volume_id             = (known after apply)
+          + volume_size           = 20
+          + volume_type           = "gp3"
+        }
+    }
+
+  # aws_internet_gateway.main will be created
+  + resource "aws_internet_gateway" "main" {
+      + arn      = (known after apply)
+      + id       = (known after apply)
+      + owner_id = (known after apply)
+      + tags     = {
+          + "Name" = "ha-ec2-setup-igw"
+        }
+      + tags_all = {
+          + "Environment" = "production"
+          + "ManagedBy"   = "Terraform"
+          + "Name"        = "ha-ec2-setup-igw"
+          + "Project"     = "ha-ec2-setup"
+        }
+      + vpc_id   = (known after apply)
+    }
+
+  # aws_route_table.public will be created
+  + resource "aws_route_table" "public" {
+      + arn              = (known after apply)
+      + id               = (known after apply)
+      + owner_id         = (known after apply)
+      + propagating_vgws = (known after apply)
+      + route            = [
+          + {
+              + cidr_block                 = "0.0.0.0/0"
+              + gateway_id                 = (known after apply)
+                # (11 unchanged attributes hidden)
+            },
+        ]
+      + tags             = {
+          + "Name" = "ha-ec2-setup-public-rt"
+        }
+      + tags_all         = {
+          + "Environment" = "production"
+          + "ManagedBy"   = "Terraform"
+          + "Name"        = "ha-ec2-setup-public-rt"
+          + "Project"     = "ha-ec2-setup"
+        }
+      + vpc_id           = (known after apply)
+    }
+
+  # aws_route_table_association.public[0] will be created
+  + resource "aws_route_table_association" "public" {
+      + id             = (known after apply)
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # aws_route_table_association.public[1] will be created
+  + resource "aws_route_table_association" "public" {
+      + id             = (known after apply)
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # aws_security_group.ec2 will be created
+  + resource "aws_security_group" "ec2" {
+      + arn                    = (known after apply)
+      + description            = "sec.grp. for ec2 instance with restricted access"
+      + egress                 = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + description      = "dns outbound"
+              + from_port        = 53
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "udp"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 53
+            },
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + description      = "http outbound"
+              + from_port        = 80
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "tcp"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 80
+            },
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + description      = "https outbound"
+              + from_port        = 443
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "tcp"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 443
+            },
+        ]
+      + id                     = (known after apply)
+      + ingress                = [
+          + {
+              + cidr_blocks      = [
+                  + "88.196.208.91/32",
+                ]
+              + description      = "ssh access from allowed ip"
+              + from_port        = 22
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "tcp"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 22
+            },
+        ]
+      + name                   = (known after apply)
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + revoke_rules_on_delete = false
+      + tags                   = {
+          + "Name" = "ha-ec2-setup-ec2-sg"
+        }
+      + tags_all               = {
+          + "Environment" = "production"
+          + "ManagedBy"   = "Terraform"
+          + "Name"        = "ha-ec2-setup-ec2-sg"
+          + "Project"     = "ha-ec2-setup"
+        }
+      + vpc_id                 = (known after apply)
+    }
+
+  # aws_subnet.public[0] will be created
+  + resource "aws_subnet" "public" {
+      + arn                                            = (known after apply)
+      + assign_ipv6_address_on_creation                = false
+      + availability_zone                              = "eu-west-1a"
+      + availability_zone_id                           = (known after apply)
+      + cidr_block                                     = "10.0.0.0/24"
+      + enable_dns64                                   = false
+      + enable_resource_name_dns_a_record_on_launch    = false
+      + enable_resource_name_dns_aaaa_record_on_launch = false
+      + id                                             = (known after apply)
+      + ipv6_cidr_block_association_id                 = (known after apply)
+      + ipv6_native                                    = false
+      + map_public_ip_on_launch                        = true
+      + owner_id                                       = (known after apply)
+      + private_dns_hostname_type_on_launch            = (known after apply)
+      + tags                                           = {
+          + "Name" = "ha-ec2-setup-public-subnet-1"
+          + "Tier" = "Public"
+        }
+      + tags_all                                       = {
+          + "Environment" = "production"
+          + "ManagedBy"   = "Terraform"
+          + "Name"        = "ha-ec2-setup-public-subnet-1"
+          + "Project"     = "ha-ec2-setup"
+          + "Tier"        = "Public"
+        }
+      + vpc_id                                         = (known after apply)
+    }
+
+  # aws_subnet.public[1] will be created
+  + resource "aws_subnet" "public" {
+      + arn                                            = (known after apply)
+      + assign_ipv6_address_on_creation                = false
+      + availability_zone                              = "eu-west-1b"
+      + availability_zone_id                           = (known after apply)
+      + cidr_block                                     = "10.0.1.0/24"
+      + enable_dns64                                   = false
+      + enable_resource_name_dns_a_record_on_launch    = false
+      + enable_resource_name_dns_aaaa_record_on_launch = false
+      + id                                             = (known after apply)
+      + ipv6_cidr_block_association_id                 = (known after apply)
+      + ipv6_native                                    = false
+      + map_public_ip_on_launch                        = true
+      + owner_id                                       = (known after apply)
+      + private_dns_hostname_type_on_launch            = (known after apply)
+      + tags                                           = {
+          + "Name" = "ha-ec2-setup-public-subnet-2"
+          + "Tier" = "Public"
+        }
+      + tags_all                                       = {
+          + "Environment" = "production"
+          + "ManagedBy"   = "Terraform"
+          + "Name"        = "ha-ec2-setup-public-subnet-2"
+          + "Project"     = "ha-ec2-setup"
+          + "Tier"        = "Public"
+        }
+      + vpc_id                                         = (known after apply)
+    }
+
+  # aws_volume_attachment.data_volume_1_attachment will be created
+  + resource "aws_volume_attachment" "data_volume_1_attachment" {
+      + device_name  = "/dev/sdf"
+      + id           = (known after apply)
+      + instance_id  = (known after apply)
+      + skip_destroy = true
+      + volume_id    = (known after apply)
+    }
+
+  # aws_volume_attachment.data_volume_2_attachment will be created
+  + resource "aws_volume_attachment" "data_volume_2_attachment" {
+      + device_name  = "/dev/sdg"
+      + id           = (known after apply)
+      + instance_id  = (known after apply)
+      + skip_destroy = true
+      + volume_id    = (known after apply)
+    }
+
+  # aws_vpc.main will be created
+  + resource "aws_vpc" "main" {
+      + arn                                  = (known after apply)
+      + cidr_block                           = "10.0.0.0/16"
+      + default_network_acl_id               = (known after apply)
+      + default_route_table_id               = (known after apply)
+      + default_security_group_id            = (known after apply)
+      + dhcp_options_id                      = (known after apply)
+      + enable_dns_hostnames                 = true
+      + enable_dns_support                   = true
+      + enable_network_address_usage_metrics = (known after apply)
+      + id                                   = (known after apply)
+      + instance_tenancy                     = "default"
+      + ipv6_association_id                  = (known after apply)
+      + ipv6_cidr_block                      = (known after apply)
+      + ipv6_cidr_block_network_border_group = (known after apply)
+      + main_route_table_id                  = (known after apply)
+      + owner_id                             = (known after apply)
+      + tags                                 = {
+          + "Name" = "ha-ec2-setup-vpc"
+        }
+      + tags_all                             = {
+          + "Environment" = "production"
+          + "ManagedBy"   = "Terraform"
+          + "Name"        = "ha-ec2-setup-vpc"
+          + "Project"     = "ha-ec2-setup"
+        }
+    }
+
+Plan: 24 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + backup_plan_id             = (known after apply)
+  + backup_vault_arn           = (known after apply)
+  + ebs_volume_1_device        = "/dev/sdf"
+  + ebs_volume_1_id            = (known after apply)
+  + ebs_volume_2_device        = "/dev/sdg"
+  + ebs_volume_2_id            = (known after apply)
+  + instance_availability_zone = (known after apply)
+  + instance_id                = (known after apply)
+  + instance_private_ip        = (known after apply)
+  + instance_profile_name      = "ha-ec2-setup-ec2-profile"
+  + instance_public_ip         = (known after apply)
+  + public_subnet_ids          = [
+      + (known after apply),
+      + (known after apply),
+    ]
+  + security_group_id          = (known after apply)
+  + ssh_connection_command     = (known after apply)
+  + vpc_cidr                   = "10.0.0.0/16"
+  + vpc_id                     = (known after apply)

@@ -1,0 +1,72 @@
+PS G:\LOCAL_REPOS\wall_test_task1\s1-test-aws-ssh> terraform apply     
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # aws_key_pair.key_pairs["test1"] will be created
+  + resource "aws_key_pair" "key_pairs" {
+      + arn             = (known after apply)
+      + fingerprint     = (known after apply)
+      + id              = (known after apply)
+      + key_name        = "test1"
+      + key_name_prefix = (known after apply)
+      + key_pair_id     = (known after apply)
+      + key_type        = (known after apply)
+      + public_key      = (known after apply)
+      + tags_all        = (known after apply)
+    }
+
+  # aws_secretsmanager_secret.ssh_keys["test1"] will be created
+  + resource "aws_secretsmanager_secret" "ssh_keys" {
+      + arn                            = (known after apply)
+      + description                    = "SSH pair for EC2: test1 user"
+      + force_overwrite_replica_secret = false
+      + id                             = (known after apply)
+      + name                           = "test1-ssh-pair"
+      + name_prefix                    = (known after apply)
+      + policy                         = (known after apply)
+      + recovery_window_in_days        = 0
+      + tags_all                       = (known after apply)
+
+      + replica (known after apply)
+    }
+
+  # aws_secretsmanager_secret_version.ssh_keys_version["test1"] will be created
+  + resource "aws_secretsmanager_secret_version" "ssh_keys_version" {
+      + arn            = (known after apply)
+      + id             = (known after apply)
+      + secret_id      = (known after apply)
+      + secret_string  = (sensitive value)
+      + version_id     = (known after apply)
+      + version_stages = (known after apply)
+    }
+
+  # tls_private_key.keys["test1"] will be created
+  + resource "tls_private_key" "keys" {
+      + algorithm                     = "RSA"
+      + ecdsa_curve                   = "P224"
+      + id                            = (known after apply)
+      + private_key_openssh           = (sensitive value)
+      + private_key_pem               = (sensitive value)
+      + private_key_pem_pkcs8         = (sensitive value)
+      + public_key_fingerprint_md5    = (known after apply)
+      + public_key_fingerprint_sha256 = (known after apply)
+      + public_key_openssh            = (known after apply)
+      + public_key_pem                = (known after apply)
+      + rsa_bits                      = 2048
+    }
+
+Plan: 4 to add, 0 to change, 0 to destroy.
+
+tls_private_key.keys["test1"]: Creating...
+tls_private_key.keys["test1"]: Creation complete after 0s [id=9450fac460c2a9687609bb20a611c2a91691043b]
+aws_key_pair.key_pairs["test1"]: Creating...
+aws_secretsmanager_secret.ssh_keys["test1"]: Creating...
+aws_secretsmanager_secret.ssh_keys["test1"]: Creation complete after 0s [id=arn:aws:secretsmanager:eu-west-1:866952548456:secret:test1-ssh-pair-4zkPRQ]
+aws_key_pair.key_pairs["test1"]: Creation complete after 0s [id=test1]
+aws_secretsmanager_secret_version.ssh_keys_version["test1"]: Creating...
+aws_secretsmanager_secret_version.ssh_keys_version["test1"]: Creation complete after 0s [id=arn:aws:secretsmanager:eu-west-1:866952548456:secret:test1-ssh-pair-4zkPRQ|terraform-20251202092046973500000002]
+
+Apply complete! Resources: 4 added, 0 changed, 0 destroyed.
